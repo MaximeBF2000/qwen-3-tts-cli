@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qwen3-tts-cli"
+version = "0.1.0"
+description = "A local-first CLI for Qwen3-TTS voice design, cloning, and custom voices"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["qwen-tts>=0.1.1,<0.2", "torch>=2.6", "soundfile>=0.13", "huggingface-hub>=0.34,<1.0"]
+
+[project.optional-dependencies]
+playback = ["sounddevice>=0.5"]
+dev = ["ruff>=0.11"]
+
+[project.scripts]
+qwen3-tts = "qwen3_tts_cli.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100

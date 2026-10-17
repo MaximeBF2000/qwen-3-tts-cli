@@ -1,0 +1,2 @@
+{"mode":"custom","text":"Welcome to this local speech synthesis demo.","speaker":"Ryan","language":"English","output":"out/welcome.wav"}
+{"mode":"design","text":"Let me tell you a story.","instruct":"A warm, calm narrator with a low pitch and clear diction.","language":"English","output":"out/story.wav","save_voice":"storyteller"}
