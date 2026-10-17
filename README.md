@@ -4,26 +4,33 @@ A local-first Python command line tool for **VoiceDesign**, **VoiceCloning**, an
 **CustomVoice**, using the official [Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS)
 Python package. Audio is synthesized on your computer. No hosted inference service or API key.
 
-## Install
+## Install on a Mac
 
-Python **3.12** is recommended (minimum 3.11). Use a fresh environment because the
-upstream package pins Transformers and Accelerate.
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if needed,
+then install the CLI directly from GitHub:
 
 ```sh
-python3.12 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e .
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source "$HOME/.local/bin/env"
+uv tool install --python 3.12 git+https://github.com/MaximeBF2000/qwen-3-tts-cli.git
+uv tool update-shell
+```
+
+Open a new terminal. You can now use `qwen3-tts` from any directory:
+
+```sh
 qwen3-tts doctor
 qwen3-tts --help
 ```
 
-On Apple Silicon, automatic device selection uses PyTorch MPS when available,
-otherwise CPU. An MPS runtime failure triggers one CPU retry. The default precision
-is float32 on MPS/CPU for compatibility. MPS support depends on your PyTorch/macOS
-versions and the operators used by upstream; CPU is the compatibility path and can
-be slow. CUDA is available through `--device cuda:0`. No FlashAttention installation
-is required; SDPA is the default.
+To update after new changes are pushed:
+
+```sh
+uv tool upgrade qwen3-tts-cli
+```
+
+On Apple Silicon, the CLI automatically uses MPS when available and falls back to
+CPU. Required models download on first use.
 
 ## Quick start
 
@@ -157,15 +164,14 @@ the first runtime failure; completed files remain available.
 
 ## Playback and troubleshooting
 
-`--play` uses macOS's built-in `afplay`. For other platforms, install
-`python -m pip install -e '.[playback]'`; sounddevice also needs system PortAudio
-where it is not bundled. Playback occurs after writing the WAV, so the file
-remains available if the audio device fails.
+`--play` uses macOS's built-in `afplay`. Playback occurs after writing the WAV,
+so the file remains available if the audio device fails.
 
 - **MPS error or memory pressure:** use `--device cpu`, or `--size 0.6B` on clone/custom.
   Auto mode retries CPU once, which still requires enough system memory.
-- **Missing package or dependency conflict:** recreate the isolated Python 3.12
-  environment and run `qwen3-tts doctor`.
+- **Missing package or dependency conflict:** reinstall with `uv tool install --force
+  --python 3.12 git+https://github.com/MaximeBF2000/qwen-3-tts-cli.git`, then run
+  `qwen3-tts doctor`.
 - **Offline cache miss:** run `download` with the same mode, size, and cache directory online.
 - **Truncated or repetitive speech:** split long text into shorter jobs and adjust
   `--max-new-tokens` or `--repetition-penalty`.
@@ -176,19 +182,6 @@ remains available if the audio device fails.
 The CLI writes complete WAV files; it does not expose live streaming. The
 upstream Python `generate_*` APIs return completed waveforms even though the
 model family supports streaming in other integrations.
-
-## Development
-
-```sh
-python -m pip install -e '.[dev]'
-python -m unittest discover -s tests -v
-ruff check src tests
-```
-
-The tests exercise input validation, profiles, batch preflight, real WAV writing,
-and the adapter's call contract with a simulated model. They do not download
-weights or establish speech quality or MPS compatibility. Validate actual inference
-on your hardware with the quick-start commands after installation.
 
 Built against the official [Python API](https://github.com/QwenLM/Qwen3-TTS#python-package-usage)
 and [model loader](https://github.com/QwenLM/Qwen3-TTS/blob/main/qwen_tts/inference/qwen3_tts_model.py).
